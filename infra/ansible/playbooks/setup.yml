@@ -1,0 +1,39 @@
+- name: Desplegar infraestructura con Terraform
+  hosts: terraform_infra
+  become: true
+  gather_facts: yes
+
+  tasks:
+    - name: Ejecutar terraform init
+      ansible.builtin.command:
+        cmd: terraform init
+        chdir: /infra
+      register: init_result
+      failed_when: init_result.rc != 0
+
+    - name: Validar configuración de Terraform
+      ansible.builtin.command:
+        cmd: terraform validate
+        chdir: /infra
+      register: validate_result
+      failed_when: validate_result.rc != 0
+
+    - name: Generar plan de Terraform
+      ansible.builtin.command:
+        cmd: terraform plan -out=tfplan
+        chdir: /infra
+      register: plan_result
+      failed_when: plan_result.rc != 0
+
+    - name: Aplicar Terraform (solo si hay cambios)
+      ansible.builtin.command:
+        cmd: terraform apply tfplan
+        chdir: /infra
+      when: plan_result.stdout.find("No changes") == -1
+      register: apply_result
+      failed_when: apply_result.rc != 0
+
+    - name: Mostrar output de Terraform
+      ansible.builtin.debug:
+        msg: "{{ apply_result.stdout }}"
+      when: apply_result is defined

@@ -1,0 +1,51 @@
+- name: Deploy Airflow and dependencies
+  hosts: local
+  tasks:
+
+    - name: Ensure Docker Compose project is running
+      community.docker.docker_compose_v2:
+        project_src: "{{ playbook_dir }}/../.."
+        state: present
+
+    - name: Wait for Postgres to be ready
+      community.docker.docker_container_exec:
+        container: postgres
+        command: pg_isready -U airflow
+      register: pg_ready
+      retries: 10
+      delay: 5
+      until: pg_ready.rc == 0
+
+    - name: Upgrade pip in Airflow container
+      community.docker.docker_container_exec:
+        container: airflow
+        user: airflow
+        command: pip install --user --upgrade pip
+
+    - name: Install macro-flow
+      community.docker.docker_container_exec:
+        container: airflow
+        user: airflow
+        command: pip install --user macro-flow
+
+    - name: Install macro-embedding-flow
+      community.docker.docker_container_exec:
+        container: airflow
+        user: airflow
+        command: pip install --user macro-embedding-flow
+        
+    - name: Install AWS provider for Airflow
+      community.docker.docker_container_exec:
+        container: airflow
+        user: airflow
+        command: pip install --user apache-airflow-providers-amazon
+
+    - name: Wait for Airflow web to be ready
+      uri:
+        url: http://localhost:8080/health
+        method: GET
+        status_code: 200
+      register: airflow_health
+      retries: 30
+      delay: 5
+      until: airflow_health.status == 200

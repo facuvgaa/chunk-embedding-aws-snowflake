@@ -1,0 +1,12 @@
+services: 
+  terraform:
+    build: .
+    container_name: terraform_infra
+    tty: true
+    stdin_open: true
+    env_file:
+      - ../.env
+    volumes:
+      - ./infra:/infra
+      - ./scripts:/scripts
+  
