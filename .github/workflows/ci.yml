@@ -36,7 +36,7 @@ jobs:
       - name: Validate docker-compose files
         run: |
           docker compose --env-file example.env -f docker-compose.yml config
-          docker compose --env-file example.env -f infra/docker-compose.yml config
+          docker compose --project-directory . --env-file example.env -f infra/docker-compose.yml config
 
       - name: Build infra image (Dockerfile validation)
         run: |
