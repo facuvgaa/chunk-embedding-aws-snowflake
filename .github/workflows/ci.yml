@@ -58,10 +58,10 @@ jobs:
         uses: hashicorp/setup-terraform@v3
         with:
           terraform_version: 1.6.6
-
+      
       - name: Terraform fmt
         working-directory: infra/infra
-        run: terraform fmt -check
+        run: terraform fmt -check || terraform fmt -recursive
 
       - name: Terraform init (no backend)
         working-directory: infra/infra
