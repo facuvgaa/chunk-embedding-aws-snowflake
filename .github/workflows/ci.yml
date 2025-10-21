@@ -38,7 +38,7 @@ jobs:
 
       - name: Docker Compose config
         run: docker compose --env-file .env -f infra/docker-compose.yml config
-          working-directory: ${{ github.workspace }}
+        working-directory: ${{ github.workspace }}
 
 
       - name: Build infra image (Dockerfile validation)
