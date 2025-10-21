@@ -5,7 +5,7 @@ services:
     tty: true
     stdin_open: true
     env_file:
-      - ../.env
+      - ../example.env
     volumes:
       - ./infra:/infra
       - ./scripts:/scripts
