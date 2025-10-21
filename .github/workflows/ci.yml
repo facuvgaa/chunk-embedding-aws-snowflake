@@ -26,17 +26,19 @@ jobs:
       - name: Python static checks (syntax only)
         run: |
           python scripts/check_dags.py
+        
       - name: Create .env if not exists
+        working-directory: ${{ github.workspace }}
         run: |
           if [ ! -f .env ]; then
             echo ".env file not found, using example.env"
             cp example.env .env
           fi
-        working-directory: ${{ github.workspace }}
+        
 
-- name: Docker Compose config
-  run: docker compose --env-file .env -f infra/docker-compose.yml config
-  working-directory: ${{ github.workspace }}
+      - name: Docker Compose config
+        run: docker compose --env-file .env -f infra/docker-compose.yml config
+          working-directory: ${{ github.workspace }}
 
 
       - name: Build infra image (Dockerfile validation)
