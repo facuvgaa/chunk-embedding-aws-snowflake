@@ -29,8 +29,8 @@ jobs:
       - name: Ensure .env exists
         run: |
           if [ ! -f .env ]; then
-          echo ".env file not found, using example.env"
-          cp example.env .env
+            echo ".env file not found, using example.env"
+            cp example.env .env
           fi
 
       - name: Validate docker-compose files
