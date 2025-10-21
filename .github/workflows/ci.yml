@@ -1,0 +1,66 @@
+name: CI
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install dev tools
+        run: |
+          python -m pip install --upgrade pip
+          pip install ruff==0.6.8 pyflakes==3.2.0
+
+      - name: Python static checks (syntax only)
+        run: |
+          python scripts/check_dags.py
+
+      - name: Validate docker-compose files
+        run: |
+          docker compose -f docker-compose.yml config
+          docker compose -f infra/docker-compose.yml config
+
+      - name: Build infra image (Dockerfile validation)
+        run: |
+          docker build -t terraform-infra infra/
+
+      - name: Install Ansible collections
+        run: |
+          pip install ansible
+          ansible-galaxy collection install -r ansible/requirements.yml
+
+      - name: Validate Ansible playbooks
+        run: |
+          ansible-playbook --syntax-check ansible/playbooks/airflow.yml
+
+      - name: Install Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.6.6
+
+      - name: Terraform fmt
+        working-directory: infra/infra
+        run: terraform fmt -check
+
+      - name: Terraform init (no backend)
+        working-directory: infra/infra
+        env:
+          TF_LOG: ERROR
+        run: |
+          terraform init -input=false -backend=false
+
+      - name: Terraform validate
+        working-directory: infra/infra
+        run: terraform validate

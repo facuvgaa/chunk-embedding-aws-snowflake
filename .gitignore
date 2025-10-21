@@ -1,0 +1,7 @@
+.terraform/
+*.tfstate
+*.tfstate.backup
+*.tfstate.lock.info
+infra/infra/.terraform/providers/
+.terraform
+.env
